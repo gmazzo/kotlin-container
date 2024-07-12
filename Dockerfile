@@ -1,15 +1,15 @@
-ARG DISTRIBUTION=ubuntu
-ARG JAVA_VENDOR=eclipse-temurin
-ARG JAVA_VERSION=21
+ARG BASE_IMAGE=eclipse-temurin:21-alpine
 
-FROM eclipse-temurin:${JAVA_VERSION} AS ubuntu
-RUN apt-get update && \
-    apt-get install -y curl bash unzip
+FROM $BASE_IMAGE
 
-FROM eclipse-temurin:${JAVA_VERSION}-alpine AS alpine
-RUN apk add curl bash unzip
+ARG BASE_IMAGE
 
-FROM $DISTRIBUTION AS final
+RUN if [ -z "${BASE_IMAGE##*alpine*}" ]; then \
+      apk add curl bash unzip; \
+    else \
+      apt-get update && \
+      apt-get install -y curl bash unzip; \
+    fi
 
 # Installs Kotlin
 ARG KOTLIN_VERSION=2.0.0

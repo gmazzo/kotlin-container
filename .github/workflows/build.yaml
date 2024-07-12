@@ -11,6 +11,7 @@ env:
 
 jobs:
   fetch-versions:
+    name: Fetch Kotlin versions
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.fetch.outputs.versions }}
@@ -23,7 +24,7 @@ jobs:
           echo "versions=$(gh --repo JetBrains/kotlin release list --exclude-drafts --exclude-pre-releases --json tagName,isLatest --jq '[.[] | select(.isLatest) | .tagName | sub("^v"; "")]')" >> "$GITHUB_OUTPUT"
 
   build:
-    name: kt${{ matrix.kotlin-version }}-jdk${{ matrix.java-version }}-${{ matrix.distribution }}
+    name: Build kt${{ matrix.kotlin-version }}-${{ matrix.base-image }}
     needs: fetch-versions
     uses: ./.github/workflows/build-flavor.yaml
     secrets: inherit
@@ -31,16 +32,10 @@ jobs:
       fail-fast: false
       matrix:
         kotlin-version: ${{ fromJSON(needs.fetch-versions.outputs.versions) }}
-        java-version:
-          - 21
-        java-vendor:
-          - eclipse-temurin
-        distribution:
-          - alpine
-          - ubuntu
+        base-image:
+          - eclipse-temurin:21
+          - eclipse-temurin:21-alpine
     with:
-        kotlin-version: ${{ matrix.kotlin-version }}
-        java-version: ${{ matrix.java-version }}
-        java-vendor: ${{ matrix.java-vendor }}
-        distribution: ${{ matrix.distribution }}
-        latest: ${{ matrix.distribution == 'alpine' }}
+      kotlin-version: ${{ matrix.kotlin-version }}
+      base-image: ${{ matrix.base-image }}
+      latest: ${{ matrix.base-image == 'eclipse-temurin:21-alpine' }}
