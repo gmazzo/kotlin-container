@@ -23,7 +23,7 @@ jobs:
           echo "versions=$(gh --repo JetBrains/kotlin release list --exclude-drafts --exclude-pre-releases --json tagName,isLatest --jq '[.[] | select(.isLatest) | .tagName | sub("^v"; "")]')" >> "$GITHUB_OUTPUT"
 
   build:
-    name: kt${{ matrix.kotlin-version }}-jdk${{ matrix.java-version }}-${{ matrix.java-vendor }}-${{ matrix.distribution }}
+    name: kt${{ matrix.kotlin-version }}-jdk${{ matrix.java-version }}-${{ matrix.distribution }}
     needs: fetch-versions
     uses: ./.github/workflows/build.yaml
     secrets: inherit
@@ -39,7 +39,7 @@ jobs:
           - alpine
           - ubuntu
     with:
-        kotlin-version: ${{ matrix.kotlin }}
+        kotlin-version: ${{ matrix.kotlin-version }}
         java-version: ${{ matrix.java-version }}
         java-vendor: ${{ matrix.java-vendor }}
         distribution: ${{ matrix.distribution }}

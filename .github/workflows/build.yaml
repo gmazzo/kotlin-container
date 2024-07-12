@@ -95,9 +95,7 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             ${{ inputs.latest && 'type=raw,value=latest' || '' }}
-            type=raw,value=kt${{ inputs.kotlin-version }}
-            type=raw,value=jdk${{ inputs.java-version }}-${{ inputs.java-vendor }}
-            type=raw,value=${{ inputs.distribution }}
+            type=raw,value=kt${{ inputs.kotlin-version }}-jdk${{ inputs.java-version }}-${{ inputs.java-vendor }}-${{ inputs.distribution }}
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
