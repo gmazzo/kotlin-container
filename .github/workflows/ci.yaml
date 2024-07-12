@@ -51,7 +51,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY_IMAGE }}
-          tags: type=raw,value=latest
+          tags: |
+            type=raw,value=kt${{ matrix.kotlin }}
+            type=raw,value=jdk${{ matrix.java-version }}-${{ matrix.java-vendor }}
+            type=raw,value=${{ matrix.distribution }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
