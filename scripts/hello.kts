@@ -1,0 +1,2 @@
+#!kotlin
+println("Hello, World!")
