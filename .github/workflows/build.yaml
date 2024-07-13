@@ -1,4 +1,4 @@
-name: ci
+name: Build
 
 on:
   workflow_dispatch:
@@ -35,6 +35,10 @@ jobs:
         base-image:
           - eclipse-temurin:21
           - eclipse-temurin:21-alpine
+          - amazoncorretto:21
+          - amazoncorretto:21-alpine
+          - azul/zulu-openjdk:21
+          - azul/zulu-openjdk-alpine:21
     with:
       kotlin-version: ${{ matrix.kotlin-version }}
       base-image: ${{ matrix.base-image }}

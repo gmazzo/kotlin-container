@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=eclipse-temurin:21-alpine
+ARG BASE_IMAGE=amazoncorretto:21
 
 FROM $BASE_IMAGE
 
@@ -6,6 +6,8 @@ ARG BASE_IMAGE
 
 RUN if [ -z "${BASE_IMAGE##*alpine*}" ]; then \
       apk add curl bash unzip; \
+    elif [ -z "${BASE_IMAGE##*amazon*}" ]; then \
+      yum install -y curl bash unzip; \
     else \
       apt-get update && \
       apt-get install -y curl bash unzip; \
