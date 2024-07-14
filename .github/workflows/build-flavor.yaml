@@ -3,6 +3,9 @@ name: Build Flavor
 on:
   workflow_call:
     inputs:
+      only-validate:
+        required: true
+        type: boolean
       kotlin-version:
         required: true
         type: string
@@ -53,6 +56,15 @@ jobs:
             BASE_IMAGE=${{ inputs.base-image }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+      - name: Test image
+        env:
+          SCRIPTS_DIR: "./test-scripts"
+        shell: bash
+        run: |
+          mkdir -p "$SCRIPTS_DIR"
+          echo 'java.io.File("/scripts/test.ok").writeText("OK")' > "$SCRIPTS_DIR/test.kts"
+          docker run --rm -v "$SCRIPTS_DIR:/scripts/" "$REGISTRY_IMAGE" /scripts/test.kts
+          [ -f scripts/test.ok ]; # fails the step if file does not exist
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
@@ -66,6 +78,7 @@ jobs:
           echo "PLATFORM_DIGEST=${PLATFORM//[\/:]/-}" >> "$GITHUB_ENV"
       - name: Upload digest
         uses: actions/upload-artifact@v4
+        if: ${{ !inputs.only-validate }}
         with:
           name: digests-${{ env.TAG_PREFIX_DIGEST }}_${{ env.PLATFORM_DIGEST }}
           path: /tmp/digests/*
@@ -74,8 +87,8 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
-    needs:
-      - build
+    needs: build
+    if: ${{ !inputs.only-validate }}
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
@@ -101,6 +114,7 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
+          # shellcheck disable=SC2046
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
       - name: Inspect image

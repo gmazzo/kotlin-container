@@ -4,42 +4,69 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 1 */1 *'
+  pull_request:
   push:
 
 env:
   REGISTRY_IMAGE: gmazzo/kotlin
 
 jobs:
-  fetch-versions:
-    name: Fetch Kotlin versions
+  koltin-versions:
+    name: Get latest Kotlin versions
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.fetch.outputs.versions }}
+      latest: ${{ steps.fetch.outputs.latest }}
     steps:
       - name: Fetch Kotlin versions
         id: fetch
         env:
           GH_TOKEN: ${{ github.token }}
+        # Gets the latest 3 major versions, latest patch of them
         run: |
-          echo "versions=$(gh --repo JetBrains/kotlin release list --exclude-drafts --exclude-pre-releases --json tagName,isLatest --jq '[.[] | select(.isLatest) | .tagName | sub("^v"; "")]')" >> "$GITHUB_OUTPUT"
+          VERSIONS=$(gh release list \
+            --repo JetBrains/kotlin \
+            --exclude-drafts \
+            --exclude-pre-releases \
+            --json tagName \
+            --jq '[map(.tagName | sub("^v"; "")) | group_by(. | sub("(?<major>\\d+).*"; .major))[] | sort_by(. | split(".") | map(tonumber))[-1]] | sort_by(. | split(".") | map(-tonumber))[0:3]'
+          )
+          LATEST=$(jq -r '.[0]' <<< "$VERSIONS")
+          echo "::notice::versions=$VERSIONS, latest=$LATEST"
+          echo "versions=$VERSIONS" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build kt${{ matrix.kotlin-version }}-${{ matrix.base-image }}
-    needs: fetch-versions
+    name: Build kt${{ matrix.kotlin-version }}-${{ format(matrix.base-image, matrix.java-version) }}
+    needs: koltin-versions
     uses: ./.github/workflows/build-flavor.yaml
     secrets: inherit
     strategy:
       fail-fast: false
       matrix:
-        kotlin-version: ${{ fromJSON(needs.fetch-versions.outputs.versions) }}
+        kotlin-version: ${{ fromJSON(needs.koltin-versions.outputs.versions) }}
+        java-version: [ 11, 17, 21 ]
         base-image:
-          - eclipse-temurin:21
-          - eclipse-temurin:21-alpine
-          - amazoncorretto:21
-          - amazoncorretto:21-alpine
-          - azul/zulu-openjdk:21
-          - azul/zulu-openjdk-alpine:21
+          - eclipse-temurin:{0}
+          - eclipse-temurin:{0}-alpine
+          - amazoncorretto:{0}
+          - amazoncorretto:{0}-alpine
+          - azul/zulu-openjdk:{0}
+          - azul/zulu-openjdk-alpine:{0}
+        include:
+            - kotlin-version: ${{ needs.koltin-versions.outputs.latest }}
+              java-version: 21
+              base-image: eclipse-temurin:{0}-alpine
+              latest: true
     with:
       kotlin-version: ${{ matrix.kotlin-version }}
-      base-image: ${{ matrix.base-image }}
-      latest: ${{ matrix.base-image == 'eclipse-temurin:21-alpine' }}
+      base-image: ${{ format(matrix.base-image, matrix.java-version) }}
+      latest: ${{ matrix.latest || false }}
+      only-validate: ${{ github.event_name == 'pull_request' }}
+
+  build-completed:
+    name: Build completed
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Build completed"
