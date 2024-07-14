@@ -46,8 +46,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           buildkitd-config-inline: |
-            [registry."docker.io"]
-              mirrors = ["mirror.gcr.io"]
+            ${{ inputs.only-validate && '[registry."docker.io"]\n  mirrors = ["mirror.gcr.io"]' || '' }}
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -58,13 +57,14 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: ${{ matrix.platform }}
-          load: true
+          load: ${{ inputs.only-validate }}
           build-args: |
             KOTLIN_VERSION=${{ inputs.kotlin-version }}
             BASE_IMAGE=${{ inputs.base-image }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
       - name: Test image
+        if: ${{ inputs.only-validate }}
         shell: bash
         run: |
           mkdir -p ./scripts/
