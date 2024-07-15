@@ -43,7 +43,7 @@ jobs:
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build kt${{ matrix.kotlin-version }}-${{ format(matrix.base-image, matrix.java-version) }}
+    name: Build ${{ matrix.kotlin-version }}-${{ format(matrix.base-image, matrix.java-version) }}
     needs: koltin-versions
     uses: ./.github/workflows/build-flavor.yaml
     secrets: inherit
