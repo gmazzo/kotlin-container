@@ -5,6 +5,8 @@ An unofficial Docker image for running Kotlin scripts.
 [![Build Status](https://github.com/gmazzo/kotlin-container/actions/workflows/build.yaml/badge.svg)](https://github.com/gmazzo/kotlin-container/actions/workflows/build.yaml)
 [![Users](https://img.shields.io/badge/users_by-Sourcegraph-purple)](https://sourcegraph.com/search?q=content:gmazzo/kotlin-container%40+-repo:github.com/gmazzo/kotlin-container)
 
+[![Contributors](https://contrib.rocks/image?repo=gmazzo/kotlin-container)](https://github.com/gmazzo/kotlin-container/graphs/contributors)
+
 ## Usage
 Given a Kotlin script `./scripts/hello.kts`:
 ```kotlin
