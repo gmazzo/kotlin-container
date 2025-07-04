@@ -1,7 +1,7 @@
 # kotlin-container
 An unofficial Docker image for running Kotlin scripts.
 
-[![Latest](https://img.shields.io/docker/image-size/gmazzo/kotlin)](https://hub.docker.com/repository/docker/gmazzo/kotlin/general)
+[![Latest](https://img.shields.io/docker/image-size/gmazzo/kotlin)](https://hub.docker.com/r/gmazzo/kotlin)
 [![Build Status](https://github.com/gmazzo/kotlin-container/actions/workflows/build.yaml/badge.svg)](https://github.com/gmazzo/kotlin-container/actions/workflows/build.yaml)
 [![Users](https://img.shields.io/badge/users_by-Sourcegraph-purple)](https://sourcegraph.com/search?q=content:gmazzo/kotlin-container%40+-repo:github.com/gmazzo/kotlin-container)
 
