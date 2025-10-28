@@ -94,7 +94,7 @@ jobs:
           echo "TAG_PREFIX_DIGEST=${TAG_PREFIX//[\/:]/-}" >> "$GITHUB_ENV"
           echo "PLATFORM_DIGEST=${PLATFORM//[\/:]/-}" >> "$GITHUB_ENV"
       - name: Upload digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: ${{ !inputs.only-validate }}
         with:
           name: digests-${{ env.TAG_PREFIX_DIGEST }}_${{ env.PLATFORM_DIGEST }}
