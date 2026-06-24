@@ -15,7 +15,7 @@ on:
       platforms:
         required: false
         type: string
-        default: '["linux/amd64", "linux/arm64"]'
+        default: '["amd64", "arm64"]'
       latest:
         required: false
         type: boolean
@@ -37,9 +37,12 @@ jobs:
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
+        with:
+          platforms: ${{ matrix.platform }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
         with:
+          platforms: ${{ matrix.platform }}
           buildkitd-config-inline: |
             [registry."docker.io"]
               mirrors = ["mirror.gcr.io"]
@@ -88,11 +91,9 @@ jobs:
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${digest#sha256:}"
       - name: Compute digest name
-        env:
-          PLATFORM: ${{ matrix.platform }}
         run: |
           echo "TAG_PREFIX_DIGEST=${TAG_PREFIX//[\/:]/-}" >> "$GITHUB_ENV"
-          echo "PLATFORM_DIGEST=${PLATFORM//[\/:]/-}" >> "$GITHUB_ENV"
+          echo 'PLATFORM_DIGEST=${{ matrix.platform }}' >> "$GITHUB_ENV"
       - name: Upload digest
         uses: actions/upload-artifact@v7
         if: ${{ !inputs.only-validate }}
